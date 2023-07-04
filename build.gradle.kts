@@ -2,6 +2,8 @@ import io.github.gciatto.kt.mpp.Plugins
 import io.github.gciatto.kt.mpp.ProjectType
 import io.github.gciatto.kt.mpp.log
 import io.github.gciatto.kt.mpp.nodeVersion
+import io.gitlab.arturbosch.detekt.DetektPlugin
+import io.gitlab.arturbosch.detekt.Detekt
 
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
@@ -58,6 +60,16 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+    plugins.withType<DetektPlugin> {
+        val check by tasks.getting
+        val detektAll by tasks.creating { group = "verification" }
+        tasks.withType<Detekt>()
+            .matching { task -> task.name.let { it.endsWith("Main") || it.endsWith("Test") } }
+            .all {
+                check.dependsOn(this)
+                detektAll.dependsOn(this)
+            }
     }
 }
 
